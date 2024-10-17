@@ -14,5 +14,5 @@ func main() {
 	fmt.Println("Listening to port 5000")
 	r := router.NewRouter()
 
-	log.Fatal(http.ListenAndServe(":5000", r))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r))
 }
