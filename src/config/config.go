@@ -1,8 +1,8 @@
 package config
 
 import (
+	"api/src/utils"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
@@ -17,9 +17,8 @@ var (
 func Load() {
 	var err error
 
-	if (err) = godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
+	err = godotenv.Load()
+	utils.CheckError(err)
 
 	Port, err = strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
