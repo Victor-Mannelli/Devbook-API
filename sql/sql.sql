@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS devbook;
 
 USE devbook;
 
-DROP TRABLE IF EXISTS users;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE users(
   id int auto_increment primary key,
@@ -10,6 +10,6 @@ CREATE TABLE users(
   username varchar(50) not null unique,
   email varchar(50) not null unique,
   password varchar(50) not null unique,
-  created_At timestamp default current_timestamp(),
+  created_at timestamp default current_timestamp()
 ) ENGINE=INNODB;
 

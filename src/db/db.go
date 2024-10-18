@@ -3,6 +3,8 @@ package db
 import (
 	"api/src/config"
 	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func DBConnect() (*sql.DB, error) {
