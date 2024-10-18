@@ -10,9 +10,9 @@ import (
 
 func main() {
 	config.Load()
-
-	fmt.Println("Listening to port 5000")
 	r := router.NewRouter()
+	// fmt.Println(config.DBConnectionString)
 
+	fmt.Printf("Listening to port %d", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r))
 }
