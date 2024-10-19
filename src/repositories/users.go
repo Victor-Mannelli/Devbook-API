@@ -3,7 +3,6 @@ package repositories
 import (
 	"api/src/models"
 	"database/sql"
-	"fmt"
 )
 
 type users struct {
@@ -39,8 +38,6 @@ func (usersRepository users) CreateUser(createUserDto models.User) (uint64, erro
 }
 
 func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.User, error) {
-	nameOrUsername = fmt.Sprintf("%%%s%%", nameOrUsername) // %nameOrUsername%
-
 	lines, err := usersRepository.db.Query(
 		"SELECT id, name, username, email, created_at FROM users WHERE name LIKE ? OR username LIKE ?",
 		nameOrUsername, nameOrUsername,
@@ -62,9 +59,31 @@ func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.
 		); err != nil {
 			return nil, err
 		}
-
 		users = append(users, user)
 	}
-
 	return users, nil
+}
+
+func (usersRepository users) FindUser(userId uint64) (models.User, error) {
+	lines, err := usersRepository.db.Query(
+		"SELECT id, name, username, email, created_at FROM users WHERE id = ?",
+		userId,
+	)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	var user models.User
+	if lines.Next() {
+		if err = lines.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Username,
+			&user.Email,
+			&user.Created_At,
+		); err != nil {
+			return models.User{}, err
+		}
+	}
+	return user, nil
 }

@@ -8,7 +8,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 func FindUsers(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +36,30 @@ func FindUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Find User"))
+	params := mux.Vars(r)
+
+	// turning userid string param value to int
+	userId, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	userRepository := repositories.UsersRepository(db)
+
+	user, err := userRepository.FindUser(userId)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusCreated, user)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
