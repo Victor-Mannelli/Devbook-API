@@ -3,6 +3,7 @@ package repositories
 import (
 	"api/src/models"
 	"database/sql"
+	"fmt"
 )
 
 type users struct {
@@ -38,6 +39,7 @@ func (usersRepository users) CreateUser(createUserDto models.User) (uint64, erro
 }
 
 func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.User, error) {
+	nameOrUsername = fmt.Sprintf("%%%s%%", nameOrUsername) // returns %nameOrUsername% which is a format needed for this query
 	lines, err := usersRepository.db.Query(
 		"SELECT id, name, username, email, created_at FROM users WHERE name LIKE ? OR username LIKE ?",
 		nameOrUsername, nameOrUsername,
