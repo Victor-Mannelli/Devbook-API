@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"api/src/modules"
+	"api/src/models"
 	"database/sql"
 )
 
@@ -13,7 +13,7 @@ func UsersRepository(db *sql.DB) *users {
 	return &users{db}
 }
 
-func (usersRepository users) CreateUser(createUserDto modules.User) (uint64, error) {
+func (usersRepository users) CreateUser(createUserDto models.User) (uint64, error) {
 	statement, err := usersRepository.db.Prepare(
 		"insert into users (name, email, username, password) values (?, ?, ?, ?)",
 	)

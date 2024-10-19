@@ -2,11 +2,10 @@ package controllers
 
 import (
 	"api/src/db"
-	"api/src/modules"
+	"api/src/models"
 	"api/src/repositories"
 	"api/src/utils"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -21,21 +20,38 @@ func FindUser(w http.ResponseWriter, r *http.Request) {
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := io.ReadAll(r.Body)
-	utils.CheckError(err)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
+		return
+	}
 
-	var user modules.User
-	err = json.Unmarshal(requestBody, &user)
-	utils.CheckError(err)
+	var user models.User
+	if err = json.Unmarshal(requestBody, &user); err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := user.ParseUserDto(); err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
 
 	db, err := db.DBConnect()
-	utils.CheckError(err)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
 
 	usersRepository := repositories.UsersRepository(db)
 
-	userId, err := usersRepository.CreateUser(user)
-	utils.CheckError(err)
+	user.ID, err = usersRepository.CreateUser(user)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
 
-	w.Write([]byte(fmt.Sprintf("Created user with id: %d", userId)))
+	utils.HttpJsonResponse(w, http.StatusCreated, user)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
