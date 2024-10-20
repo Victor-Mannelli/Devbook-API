@@ -75,7 +75,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := user.ParseUserDto(); err != nil {
+	if err := user.ParseUserDto("createUser"); err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
@@ -99,7 +99,48 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("UpdateUser"))
+	params := mux.Vars(r)
+
+	// turning userid string param value to int
+	userId, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	requestBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	var updatedUserDto models.User
+	if err := json.Unmarshal(requestBody, &updatedUserDto); err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = updatedUserDto.ParseUserDto("updateUser"); err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	usersRepository := repositories.UsersRepository(db)
+
+	err = usersRepository.UpdateUser(userId, updatedUserDto)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusNoContent, nil)
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {

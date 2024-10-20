@@ -15,15 +15,15 @@ type User struct {
 	Created_At time.Time `json:"created_at,omitempty"`
 }
 
-func (user *User) ParseUserDto() error {
-	if err := user.validate(); err != nil {
+func (user *User) ParseUserDto(step string) error {
+	if err := user.validate(step); err != nil {
 		return err
 	}
 	user.trimParser()
 	return nil
 }
 
-func (user *User) validate() error {
+func (user *User) validate(step string) error {
 	if user.Name == "" {
 		return errors.New("name is set as required")
 	}
@@ -33,7 +33,7 @@ func (user *User) validate() error {
 	if user.Username == "" {
 		return errors.New("username is set as required")
 	}
-	if user.Password == "" {
+	if step == "createUser" && user.Password == "" {
 		return errors.New("password is set as required")
 	}
 
