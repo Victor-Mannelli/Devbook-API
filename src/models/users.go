@@ -24,17 +24,26 @@ func (user *User) ParseUserDto(step string) error {
 }
 
 func (user *User) validate(step string) error {
-	if user.Name == "" {
-		return errors.New("name is set as required")
+	if step == "updateUser" {
+		if user.Name == "" && user.Email == "" && user.Username == "" && user.Password == "" {
+			return errors.New("at least one field is required")
+		}
+		// No need to check for non-provided fields (i.e., empty fields will not be updated)
 	}
-	if user.Email == "" {
-		return errors.New("email is set as required")
-	}
-	if user.Username == "" {
-		return errors.New("username is set as required")
-	}
-	if step == "createUser" && user.Password == "" {
-		return errors.New("password is set as required")
+
+	if step == "createUser" {
+		if user.Name == "" {
+			return errors.New("name is required")
+		}
+		if user.Email == "" {
+			return errors.New("email is required")
+		}
+		if user.Username == "" {
+			return errors.New("username is required")
+		}
+		if user.Password == "" {
+			return errors.New("password is required")
+		}
 	}
 
 	return nil

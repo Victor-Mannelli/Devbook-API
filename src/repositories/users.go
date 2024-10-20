@@ -4,6 +4,7 @@ import (
 	"api/src/models"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type users struct {
@@ -91,15 +92,49 @@ func (usersRepository users) FindUser(userId uint64) (models.User, error) {
 }
 
 func (usersRepository users) UpdateUser(userId uint64, updatedUserDto models.User) error {
-	statement, err := usersRepository.db.Prepare(
-		"UPDATE users SET name = ?, username = ?, email = ? WHERE id = ?",
-	)
+	query := "UPDATE users SET "
+	args := []interface{}{}
+
+	if updatedUserDto.Name != "" {
+		query += "name = ?, "
+		args = append(args, updatedUserDto.Name)
+	}
+	if updatedUserDto.Email != "" {
+		query += "email = ?, "
+		args = append(args, updatedUserDto.Email)
+	}
+	if updatedUserDto.Username != "" {
+		query += "username = ?, "
+		args = append(args, updatedUserDto.Username)
+	}
+
+	// Remove the trailing comma and space from the query
+	query = strings.TrimSuffix(query, ", ")
+	// Add the WHERE clause
+	query += " WHERE id = ?"
+	args = append(args, userId)
+
+	statement, err := usersRepository.db.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer statement.Close()
 
-	if _, err = statement.Exec(updatedUserDto.Name, updatedUserDto.Username, updatedUserDto.Email, userId); err != nil {
+	if _, err = statement.Exec(args...); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (usersRepository users) DeleteUser(userId uint64) error {
+	statement, err := usersRepository.db.Prepare("DELETE FROM users WHERE ID = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(userId); err != nil {
 		return err
 	}
 
