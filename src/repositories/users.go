@@ -41,19 +41,19 @@ func (usersRepository users) CreateUser(createUserDto models.User) (uint64, erro
 
 func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.User, error) {
 	nameOrUsername = fmt.Sprintf("%%%s%%", nameOrUsername) // returns %nameOrUsername% which is a format needed for this query
-	lines, err := usersRepository.db.Query(
+	rows, err := usersRepository.db.Query(
 		"SELECT id, name, username, email, created_at FROM users WHERE name LIKE ? OR username LIKE ?",
 		nameOrUsername, nameOrUsername,
 	)
 	if err != nil {
 		return nil, err
 	}
-	defer lines.Close()
+	defer rows.Close()
 
 	var users []models.User
-	for lines.Next() {
+	for rows.Next() {
 		var user models.User
-		if err = lines.Scan(
+		if err = rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Username,
@@ -67,8 +67,8 @@ func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.
 	return users, nil
 }
 
-func (usersRepository users) FindUser(userId uint64) (models.User, error) {
-	lines, err := usersRepository.db.Query(
+func (usersRepository users) FindUserById(userId uint64) (models.User, error) {
+	rows, err := usersRepository.db.Query(
 		"SELECT id, name, username, email, created_at FROM users WHERE id = ?",
 		userId,
 	)
@@ -77,14 +77,30 @@ func (usersRepository users) FindUser(userId uint64) (models.User, error) {
 	}
 
 	var user models.User
-	if lines.Next() {
-		if err = lines.Scan(
+	if rows.Next() {
+		if err = rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Username,
 			&user.Email,
 			&user.Created_At,
 		); err != nil {
+			return models.User{}, err
+		}
+	}
+	return user, nil
+}
+
+func (usersRepository users) FindUserByEmail(email string) (models.User, error) {
+	row, err := usersRepository.db.Query("SELECT id, password FROM users WHERE email = ?", email)
+	if err != nil {
+		return models.User{}, err
+	}
+	defer row.Close()
+
+	var user models.User
+	if row.Next() {
+		if err = row.Scan(&user.ID, &user.Password); err != nil {
 			return models.User{}, err
 		}
 	}

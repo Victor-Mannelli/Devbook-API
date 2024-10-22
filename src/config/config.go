@@ -1,8 +1,8 @@
 package config
 
 import (
-	"api/src/utils"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -12,13 +12,16 @@ import (
 var (
 	DBConnectionString = ""
 	Port               = 0
+	JwtSecret          []byte
 )
 
 func Load() {
 	var err error
 
 	err = godotenv.Load()
-	utils.CheckError(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	Port, err = strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
@@ -30,4 +33,6 @@ func Load() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
+
+	JwtSecret = []byte(os.Getenv("JWT_SECRET"))
 }

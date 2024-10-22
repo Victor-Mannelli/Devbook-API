@@ -35,10 +35,10 @@ func FindUsers(w http.ResponseWriter, r *http.Request) {
 	utils.HttpJsonResponse(w, http.StatusOK, users)
 }
 
-func FindUser(w http.ResponseWriter, r *http.Request) {
+func FindUserById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	// turning userid string param value to int
+	//* turning userid string param value to int
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
@@ -53,7 +53,7 @@ func FindUser(w http.ResponseWriter, r *http.Request) {
 
 	userRepository := repositories.UsersRepository(db)
 
-	user, err := userRepository.FindUser(userId)
+	user, err := userRepository.FindUserById(userId)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
 		return
@@ -63,14 +63,14 @@ func FindUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	requestBody, err := io.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	var user models.User
-	if err = json.Unmarshal(requestBody, &user); err != nil {
+	if err = json.Unmarshal(reqBody, &user); err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
@@ -101,21 +101,21 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	// turning userid string param value to int
+	//* turning userid string param value to int
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	requestBody, err := io.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	var updatedUserDto models.User
-	if err := json.Unmarshal(requestBody, &updatedUserDto); err != nil {
+	if err := json.Unmarshal(reqBody, &updatedUserDto); err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
@@ -146,7 +146,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	// turning userid string param value to int
+	//* turning userid string param value to int
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
