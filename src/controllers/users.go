@@ -6,6 +6,7 @@ import (
 	"api/src/repositories"
 	"api/src/utils"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -108,6 +109,17 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userIdFromToken, err := utils.UserIdFromToken(r)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+		return
+	}
+	//* checks if user is the owner of what's being changed
+	if userIdFromToken != userId {
+		utils.HttpErrorResponse(w, http.StatusForbidden, errors.New("access forbidden for current action"))
+		return
+	}
+
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
@@ -150,6 +162,17 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	userIdFromToken, err := utils.UserIdFromToken(r)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+		return
+	}
+	//* checks if user is the owner of what's being changed
+	if userIdFromToken != userId {
+		utils.HttpErrorResponse(w, http.StatusForbidden, errors.New("access forbidden for current action"))
 		return
 	}
 
