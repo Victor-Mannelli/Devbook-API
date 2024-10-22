@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func CheckError(err error) {
@@ -30,4 +32,12 @@ func HttpErrorResponse(w http.ResponseWriter, statusCode int, err error) {
 	}{
 		Error: err.Error(),
 	})
+}
+
+func HashString(str string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(str), bcrypt.DefaultCost)
+}
+
+func ValidateHash(hashedStr, str string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedStr), []byte(str))
 }

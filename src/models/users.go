@@ -1,6 +1,7 @@
 package models
 
 import (
+	"api/src/utils"
 	"errors"
 	"strings"
 	"time"
@@ -21,7 +22,10 @@ func (user *User) ParseUserDto(step string) error {
 	if err := user.validate(step); err != nil {
 		return err
 	}
-	user.trimParser()
+	if err := user.userParser(step); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -56,8 +60,19 @@ func (user *User) validate(step string) error {
 	return nil
 }
 
-func (user *User) trimParser() {
+func (user *User) userParser(step string) error {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Username = strings.TrimSpace(user.Username)
 	user.Email = strings.TrimSpace(user.Email)
+
+	if step == "createUser" {
+		hashedPassword, err := utils.HashString(user.Password)
+		if err != nil {
+			return err
+		}
+
+		user.Password = string(hashedPassword)
+	}
+
+	return nil
 }
