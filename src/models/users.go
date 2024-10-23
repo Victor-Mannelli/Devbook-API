@@ -19,7 +19,7 @@ type User struct {
 }
 
 func (user *User) ParseUserDto(step string) error {
-	if err := user.validate(step); err != nil {
+	if err := user.validateUserDto(step); err != nil {
 		return err
 	}
 	if err := user.userParser(step); err != nil {
@@ -29,7 +29,7 @@ func (user *User) ParseUserDto(step string) error {
 	return nil
 }
 
-func (user *User) validate(step string) error {
+func (user *User) validateUserDto(step string) error {
 	emailErr := checkmail.ValidateFormat(user.Email)
 	if user.Email != "" && emailErr != nil {
 		return errors.New("email with invalid format")
