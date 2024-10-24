@@ -5,7 +5,13 @@ import (
 	"net/http"
 )
 
-var userRoutes = []Route{
+var usersRoutes = []Route{
+	{
+		URI:      "/users",
+		Method:   http.MethodPost,
+		Function: controllers.CreateUser,
+		Auth:     false,
+	},
 	{
 		URI:      "/users",
 		Method:   http.MethodGet,
@@ -17,12 +23,6 @@ var userRoutes = []Route{
 		Method:   http.MethodGet,
 		Function: controllers.FindUserById,
 		Auth:     true,
-	},
-	{
-		URI:      "/users",
-		Method:   http.MethodPost,
-		Function: controllers.CreateUser,
-		Auth:     false,
 	},
 	{
 		URI:      "/users/changePassword",

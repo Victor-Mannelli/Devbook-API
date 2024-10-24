@@ -24,3 +24,10 @@ values
 (4, 5),
 (4, 6),
 (5, 6);
+
+insert into posts (post_id, title, content, author_id, likes)
+values 
+(1, "title 1", "content_1", 1, 0),
+(2, "title 2", "content_2", 2, 2),
+(3, "title 3", "content_3", 3, 4),
+(4, "title 4", "content_4", 4, 8);

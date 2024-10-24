@@ -5,7 +5,13 @@ import (
 	"net/http"
 )
 
-var followerRoutes = []Route{
+var followersRoutes = []Route{
+	{
+		URI:      "/followers/{userId}",
+		Method:   http.MethodPost,
+		Function: controllers.Follow,
+		Auth:     true,
+	},
 	{
 		URI:      "/followers/{userId}",
 		Method:   http.MethodGet,
@@ -16,12 +22,6 @@ var followerRoutes = []Route{
 		URI:      "/followers/{userId}/following",
 		Method:   http.MethodGet,
 		Function: controllers.FindFollowing,
-		Auth:     true,
-	},
-	{
-		URI:      "/followers/{userId}",
-		Method:   http.MethodPost,
-		Function: controllers.Follow,
 		Auth:     true,
 	},
 	{
