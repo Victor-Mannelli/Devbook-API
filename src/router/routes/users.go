@@ -25,6 +25,12 @@ var userRoutes = []Route{
 		Auth:     false,
 	},
 	{
+		URI:      "/users/changePassword",
+		Method:   http.MethodPost,
+		Function: controllers.ChangePassword,
+		Auth:     true,
+	},
+	{
 		URI:      "/users/{userId}",
 		Method:   http.MethodPut,
 		Function: controllers.UpdateUser,

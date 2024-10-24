@@ -99,6 +99,58 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	utils.HttpJsonResponse(w, http.StatusCreated, user)
 }
 
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userIdFromToken, err := utils.UserIdFromToken(r)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	var updatePasswordDto models.Password
+	if err = json.Unmarshal(reqBody, &updatePasswordDto); err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	usersRepository := repositories.UsersRepository(db)
+
+	savedHashedPassword, err := usersRepository.FindUsersPassword(userIdFromToken)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err = utils.ValidateHash(savedHashedPassword, updatePasswordDto.Password); err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnauthorized, errors.New("passwords don't match"))
+	}
+
+	hashedPassword, err := utils.HashString(updatePasswordDto.NewPassword)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = usersRepository.UpdatePassword(userIdFromToken, string(hashedPassword)); err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	// utils.HttpJsonResponse(w, http.StatusOK, nil)
+}
+
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 

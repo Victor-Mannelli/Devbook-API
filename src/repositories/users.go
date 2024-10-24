@@ -91,6 +91,37 @@ func (usersRepository users) FindUserById(userId uint64) (models.User, error) {
 	return user, nil
 }
 
+func (usersRepository users) FindUsersPassword(userId uint64) (string, error) {
+	row, err := usersRepository.db.Query("SELECT password FROM users WHERE id = ?", userId)
+	if err != nil {
+		return "", err
+	}
+	defer row.Close()
+
+	var user models.User
+	if row.Next() {
+		if err = row.Scan(&user.Password); err != nil {
+			return "", err
+		}
+	}
+
+	return user.Password, nil
+}
+
+func (usersRepository users) UpdatePassword(userId uint64, newPassword string) error {
+	statement, err := usersRepository.db.Prepare("UPDATE users SET password = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err := statement.Exec(newPassword, userId); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (usersRepository users) FindUserByEmail(email string) (models.User, error) {
 	row, err := usersRepository.db.Query("SELECT id, password FROM users WHERE email = ?", email)
 	if err != nil {
