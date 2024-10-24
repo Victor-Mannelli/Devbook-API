@@ -7,7 +7,7 @@ import (
 
 var followerRoutes = []Route{
 	{
-		URI:      "/followers",
+		URI:      "/followers/{userId}",
 		Method:   http.MethodGet,
 		Function: controllers.FindFollowers,
 		Auth:     true,

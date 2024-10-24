@@ -13,23 +13,27 @@ func FollowersRepository(db *sql.DB) *followers {
 	return &followers{db}
 }
 
-func (followersRepository followers) FindFollowers(userId uint64) ([]models.Followers, error) {
-	rows, err := followersRepository.db.Query(
-		"SELECT * FROM followers WHERE user_id = ?",
-		userId,
+func (followersRepository users) FindFollowers(userId uint64) ([]models.User, error) {
+	rows, err := followersRepository.db.Query(`
+		SELECT u.id, u.name, u.username, u.email, u.created_at
+		FROM users u INNER JOIN followers f on u.id = f.follower_id
+		WHERE user_id = ?
+	`, userId,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var followers []models.Followers
+	var followers []models.User
 	for rows.Next() {
-		var follower models.Followers
+		var follower models.User
 		if err = rows.Scan(
-			&follower.UserId,
-			&follower.FollowerId,
-			&follower.CreatedAt,
+			&follower.ID,
+			&follower.Name,
+			&follower.Username,
+			&follower.Email,
+			&follower.Created_At,
 		); err != nil {
 			return nil, err
 		}

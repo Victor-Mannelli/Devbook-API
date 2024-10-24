@@ -12,9 +12,17 @@ import (
 )
 
 func FindFollowers(w http.ResponseWriter, r *http.Request) {
-	userId, err := utils.UserIdFromToken(r)
+	// userId, err := utils.UserIdFromToken(r)
+	// if err != nil {
+	// 	utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+	// 	return
+	// }
+	params := mux.Vars(r)
+
+	//* turning userid string param value to int
+	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
-		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -25,7 +33,7 @@ func FindFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	followersRepository := repositories.FollowersRepository(db)
+	followersRepository := repositories.UsersRepository(db)
 
 	followers, err := followersRepository.FindFollowers(userId)
 	if err != nil {
@@ -69,7 +77,7 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.HttpJsonResponse(w, http.StatusNoContent, nil)
+	utils.HttpJsonResponse(w, http.StatusOK, nil)
 }
 
 func UnFollow(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +91,11 @@ func UnFollow(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if followerId == userId {
+		utils.HttpErrorResponse(w, http.StatusForbidden, errors.New("you can unfollow yourself"))
 		return
 	}
 
@@ -100,7 +113,5 @@ func UnFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.HttpJsonResponse(w, http.StatusNoContent, nil)
+	utils.HttpJsonResponse(w, http.StatusOK, nil)
 }
-
-// CRD
