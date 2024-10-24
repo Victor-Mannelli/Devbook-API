@@ -33,7 +33,7 @@ func (followersRepository users) FindFollowers(userId uint64) ([]models.User, er
 			&follower.Name,
 			&follower.Username,
 			&follower.Email,
-			&follower.Created_At,
+			&follower.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -45,6 +45,40 @@ func (followersRepository users) FindFollowers(userId uint64) ([]models.User, er
 	}
 
 	return followers, nil
+}
+
+func (followersRepository users) FindFollowing(userId uint64) ([]models.User, error) {
+	rows, err := followersRepository.db.Query(`
+		SELECT u.id, u.name, u.username, u.email, u.created_at
+		FROM users u INNER JOIN followers f on u.id = f.user_id
+		WHERE follower_id = ?
+	`, userId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		if err = rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Username,
+			&user.Email,
+			&user.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (followersRepository followers) Follow(userId uint64, userToFollow uint64) error {

@@ -12,11 +12,6 @@ import (
 )
 
 func FindFollowers(w http.ResponseWriter, r *http.Request) {
-	// userId, err := utils.UserIdFromToken(r)
-	// if err != nil {
-	// 	utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
-	// 	return
-	// }
 	params := mux.Vars(r)
 
 	//* turning userid string param value to int
@@ -42,6 +37,34 @@ func FindFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.HttpJsonResponse(w, http.StatusCreated, followers)
+}
+
+func FindFollowing(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	//* turning userid string param value to int
+	userId, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	followersRepository := repositories.UsersRepository(db)
+
+	following, err := followersRepository.FindFollowing(userId)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusCreated, following)
 }
 
 func Follow(w http.ResponseWriter, r *http.Request) {

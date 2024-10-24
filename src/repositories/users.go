@@ -58,7 +58,7 @@ func (usersRepository users) FindFilteredUsers(nameOrUsername string) ([]models.
 			&user.Name,
 			&user.Username,
 			&user.Email,
-			&user.Created_At,
+			&user.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -83,7 +83,7 @@ func (usersRepository users) FindUserById(userId uint64) (models.User, error) {
 			&user.Name,
 			&user.Username,
 			&user.Email,
-			&user.Created_At,
+			&user.CreatedAt,
 		); err != nil {
 			return models.User{}, err
 		}

@@ -13,6 +13,12 @@ var followerRoutes = []Route{
 		Auth:     true,
 	},
 	{
+		URI:      "/followers/{userId}/following",
+		Method:   http.MethodGet,
+		Function: controllers.FindFollowing,
+		Auth:     true,
+	},
+	{
 		URI:      "/followers/{userId}",
 		Method:   http.MethodPost,
 		Function: controllers.Follow,
