@@ -168,4 +168,44 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	utils.HttpJsonResponse(w, http.StatusCreated, post)
 }
 
-func DeletePost(w http.ResponseWriter, r *http.Request) {}
+func DeletePost(w http.ResponseWriter, r *http.Request) {
+	userIdFromToken, err := utils.UserIdFromToken(r)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	params := mux.Vars(r)
+	postId, err := strconv.ParseUint(params["postId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	postsRepository := repositories.PostsRepository(db)
+
+	savedPost, err := postsRepository.FindPostById(postId)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if savedPost.AuthorId != userIdFromToken {
+		utils.HttpErrorResponse(w, http.StatusForbidden, errors.New("access forbidden for current action"))
+		return
+	}
+
+	if err = postsRepository.DeletePost(postId); err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusNoContent, nil)
+}
