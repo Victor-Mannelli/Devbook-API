@@ -100,6 +100,39 @@ func (postsRepository posts) FindPostById(postId uint64) (models.Post, error) {
 	return post, nil
 }
 
+func (postsRepository posts) FindPostsByUser(userId uint64) ([]models.Post, error) {
+	rows, err := postsRepository.db.Query(`
+		SELECT p.*, u.username 
+		FROM posts p INNER JOIN users u ON u.id = p.author_id 
+		WHERE p.author_id = ?`,
+		userId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+
+		if err = rows.Scan(
+			&post.PostId,
+			&post.Title,
+			&post.Content,
+			&post.AuthorId,
+			&post.Likes,
+			&post.CreatedAt,
+			&post.AuthorUsername,
+		); err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
 func (postsRepository posts) UpdatePost(postId uint64, updatedpostDto models.Post) error {
 	query := "UPDATE posts SET "
 	args := []interface{}{}

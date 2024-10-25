@@ -15,7 +15,13 @@ var postsRoutes = []Route{
 	{
 		URI:      "/posts",
 		Method:   http.MethodGet,
-		Function: controllers.FindPosts, // posts created by you and people you follow
+		Function: controllers.FindPostsFromSelfAndFollowedUsers,
+		Auth:     true,
+	},
+	{
+		URI:      "/posts/user/{userId}",
+		Method:   http.MethodGet,
+		Function: controllers.FindPostsFromUser,
 		Auth:     true,
 	},
 	{

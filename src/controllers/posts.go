@@ -58,7 +58,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	utils.HttpJsonResponse(w, http.StatusCreated, post)
 }
 
-func FindPosts(w http.ResponseWriter, r *http.Request) {
+func FindPostsFromSelfAndFollowedUsers(w http.ResponseWriter, r *http.Request) {
 	userIdFromToken, err := utils.UserIdFromToken(r)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusUnauthorized, err)
@@ -108,6 +108,32 @@ func FindPostById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.HttpJsonResponse(w, http.StatusCreated, user)
+}
+
+func FindPostsFromUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	userId, err := strconv.ParseUint(params["userId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	postsRepository := repositories.PostsRepository(db)
+
+	posts, err := postsRepository.FindPostsByUser(userId)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusOK, posts)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
