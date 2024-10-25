@@ -39,7 +39,6 @@ func (user *User) validateUserDto(step string) error {
 		if user.Name == "" && user.Email == "" && user.Username == "" && user.Password == "" {
 			return errors.New("at least one field is required")
 		}
-		// No need to check for non-provided fields (i.e., empty fields will not be updated)
 	}
 
 	if step == "createUser" {

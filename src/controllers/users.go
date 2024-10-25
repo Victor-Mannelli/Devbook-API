@@ -154,7 +154,6 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	//* turning userid string param value to int
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
@@ -210,7 +209,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	//* turning userid string param value to int
 	userId, err := strconv.ParseUint(params["userId"], 10, 64)
 	if err != nil {
 		utils.HttpErrorResponse(w, http.StatusBadRequest, err)

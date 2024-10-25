@@ -3,6 +3,7 @@ package repositories
 import (
 	"api/src/models"
 	"database/sql"
+	"strings"
 )
 
 type posts struct {
@@ -99,41 +100,34 @@ func (postsRepository posts) FindPostById(postId uint64) (models.Post, error) {
 	return post, nil
 }
 
-// func (postsRepository posts) UpdatePost(postId uint64, updatedpostDto models.Post) error {
-// 	query := "UPDATE posts SET "
-// 	args := []interface{}{}
+func (postsRepository posts) UpdatePost(postId uint64, updatedpostDto models.Post) error {
+	query := "UPDATE posts SET "
+	args := []interface{}{}
 
-// 	if updatedpostDto.Name != "" {
-// 		query += "name = ?, "
-// 		args = append(args, updatedpostDto.Name)
-// 	}
-// 	if updatedpostDto.Email != "" {
-// 		query += "email = ?, "
-// 		args = append(args, updatedpostDto.Email)
-// 	}
-// 	if updatedpostDto.postname != "" {
-// 		query += "postname = ?, "
-// 		args = append(args, updatedpostDto.postname)
-// 	}
+	if updatedpostDto.Title != "" {
+		query += "title = ?, "
+		args = append(args, updatedpostDto.Title)
+	}
+	if updatedpostDto.Content != "" {
+		query += "content = ?, "
+		args = append(args, updatedpostDto.Content)
+	}
 
-// 	// Remove the trailing comma and space from the query
-// 	query = strings.TrimSuffix(query, ", ")
-// 	// Add the WHERE clause
-// 	query += " WHERE id = ?"
-// 	args = append(args, postId)
+	query = strings.TrimSuffix(query, ", ") + " WHERE post_id = ?"
+	args = append(args, postId)
 
-// 	statement, err := postsRepository.db.Prepare(query)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer statement.Close()
+	statement, err := postsRepository.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
 
-// 	if _, err = statement.Exec(args...); err != nil {
-// 		return err
-// 	}
+	if _, err = statement.Exec(args...); err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 // func (postsRepository posts) DeletePost(postId uint64) error {
 // 	return nil
