@@ -58,6 +58,56 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	utils.HttpJsonResponse(w, http.StatusCreated, post)
 }
 
+func LikePost(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	postId, err := strconv.ParseUint(params["postId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	postsRepository := repositories.PostsRepository(db)
+
+	if err = postsRepository.Like(postId); err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusOK, nil)
+}
+
+func DislikePost(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	postId, err := strconv.ParseUint(params["postId"], 10, 64)
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := db.DBConnect()
+	if err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	postsRepository := repositories.PostsRepository(db)
+
+	if err = postsRepository.Dislike(postId); err != nil {
+		utils.HttpErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.HttpJsonResponse(w, http.StatusOK, nil)
+}
+
 func FindPostsFromSelfAndFollowedUsers(w http.ResponseWriter, r *http.Request) {
 	userIdFromToken, err := utils.UserIdFromToken(r)
 	if err != nil {

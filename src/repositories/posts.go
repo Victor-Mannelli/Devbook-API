@@ -37,6 +37,39 @@ func (postsRepository posts) CreatePost(createpostDto models.Post) (uint64, erro
 	return uint64(postId), nil
 }
 
+func (postsRepository posts) Like(postId uint64) error {
+	statement, err := postsRepository.db.Prepare("UPDATE posts SET likes = likes + 1 WHERE post_id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(postId); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (postsRepository posts) Dislike(postId uint64) error {
+	statement, err := postsRepository.db.Prepare(`
+		UPDATE posts SET likes = 
+		CASE 
+			WHEN likes > 0 THEN likes - 1 
+			ELSE likes 
+		END
+		WHERE post_id = ? 
+	`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(postId); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (postsRepository posts) FindPosts(userId uint64) ([]models.Post, error) {
 	rows, err := postsRepository.db.Query(`
 		SELECT DISTINCT p.*, u.username 
