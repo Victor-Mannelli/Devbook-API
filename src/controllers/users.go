@@ -60,7 +60,7 @@ func FindUserById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.HttpJsonResponse(w, http.StatusCreated, user)
+	utils.HttpJsonResponse(w, http.StatusOK, user)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// utils.HttpJsonResponse(w, http.StatusOK, nil)
+	utils.HttpJsonResponse(w, http.StatusOK, nil)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {

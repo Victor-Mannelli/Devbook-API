@@ -5,7 +5,6 @@ DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS followers;
 DROP TABLE IF EXISTS users;
 
-
 CREATE TABLE users(
   id int auto_increment primary key,
   name varchar(50) not null,
@@ -32,7 +31,7 @@ CREATE TABLE posts(
   title varchar(50) not null,
   content varchar(300) not null,
   author_id int not null, 
-  likes int not null,
+  likes int default 0,
   created_at timestamp default current_timestamp(),
   
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE

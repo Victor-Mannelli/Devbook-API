@@ -3,7 +3,6 @@ package repositories
 import (
 	"api/src/models"
 	"database/sql"
-	"strings"
 )
 
 type posts struct {
@@ -14,18 +13,16 @@ func PostsRepository(db *sql.DB) *posts {
 	return &posts{db}
 }
 
-func (postsRepository posts) CreatePost(createpostDto models.Posts) (uint64, error) {
+func (postsRepository posts) CreatePost(createpostDto models.Post) (uint64, error) {
 	statement, err := postsRepository.db.Prepare(
-		"insert into posts () values (?, ?, ?, ?)",
+		"insert into posts (title, content, author_id) values (?, ?, ?)",
 	)
 	if err != nil {
 		return 0, err
 	}
 	defer statement.Close()
 
-	result, err := statement.Exec(
-	//
-	)
+	result, err := statement.Exec(createpostDto.Title, createpostDto.Content, createpostDto.AuthorId)
 
 	if err != nil {
 		return 0, err
@@ -39,94 +36,105 @@ func (postsRepository posts) CreatePost(createpostDto models.Posts) (uint64, err
 	return uint64(postId), nil
 }
 
-func (postsRepository posts) FindFilteredposts(nameOrpostname string) ([]models.Posts, error) {
-	// nameOrpostname = fmt.Sprintf("%%%s%%", nameOrpostname) // returns %nameOrpostname% which is a format needed for this query
-	// rows, err := postsRepository.db.Query(
-	// 	"SELECT id, name, postname, email, created_at FROM posts WHERE name LIKE ? OR postname LIKE ?",
-	// 	nameOrpostname, nameOrpostname,
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
+func (postsRepository posts) FindPosts(userId uint64) ([]models.Post, error) {
+	rows, err := postsRepository.db.Query(`
+		SELECT DISTINCT p.*, u.username 
+		FROM posts p 
+		INNER JOIN users u ON u.id = p.author_id 
+		INNER JOIN followers f ON p.author_id = f.user_id 
+		WHERE u.id = ? or f.follower_id = ?
+		ORDER BY 1 desc`,
+		userId, userId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	// var posts []models.Posts
-	// for rows.Next() {
-	// 	var post models.Posts
-	// 	if err = rows.Scan(
-	// 		&post.ID,
-	// 		&post.Name,
-	// 		&post.postname,
-	// 		&post.Email,
-	// 		&post.CreatedAt,
-	// 	); err != nil {
-	// 		return nil, err
-	// 	}
-	// 	posts = append(posts, post)
-	// }
-	// return posts, nil
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		if err = rows.Scan(
+			&post.PostId,
+			&post.Title,
+			&post.Content,
+			&post.AuthorId,
+			&post.Likes,
+			&post.CreatedAt,
+			&post.AuthorUsername,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }
 
-func (postsRepository posts) FindPostById(postId uint64) (models.Posts, error) {
-	rows, err := postsRepository.db.Query(
-		"SELECT id, name, postname, email, created_at FROM posts WHERE id = ?",
+func (postsRepository posts) FindPostById(postId uint64) (models.Post, error) {
+	rows, err := postsRepository.db.Query(`
+		SELECT p.*, u.username 
+		FROM posts p INNER JOIN users u ON u.id = p.author_id 
+		WHERE p.post_id = ?`,
 		postId,
 	)
 	if err != nil {
-		return models.Posts{}, err
+		return models.Post{}, err
 	}
+	defer rows.Close()
 
-	var post models.Posts
+	var post models.Post
 	if rows.Next() {
 		if err = rows.Scan(
-			&post.ID,
-			&post.Name,
-			&post.postname,
-			&post.Email,
+			&post.PostId,
+			&post.Title,
+			&post.Content,
+			&post.AuthorId,
+			&post.Likes,
 			&post.CreatedAt,
+			&post.AuthorUsername,
 		); err != nil {
-			return models.Posts{}, err
+			return models.Post{}, err
 		}
 	}
 	return post, nil
 }
 
-func (postsRepository posts) UpdatePost(postId uint64, updatedpostDto models.Posts) error {
-	query := "UPDATE posts SET "
-	args := []interface{}{}
+// func (postsRepository posts) UpdatePost(postId uint64, updatedpostDto models.Post) error {
+// 	query := "UPDATE posts SET "
+// 	args := []interface{}{}
 
-	if updatedpostDto.Name != "" {
-		query += "name = ?, "
-		args = append(args, updatedpostDto.Name)
-	}
-	if updatedpostDto.Email != "" {
-		query += "email = ?, "
-		args = append(args, updatedpostDto.Email)
-	}
-	if updatedpostDto.postname != "" {
-		query += "postname = ?, "
-		args = append(args, updatedpostDto.postname)
-	}
+// 	if updatedpostDto.Name != "" {
+// 		query += "name = ?, "
+// 		args = append(args, updatedpostDto.Name)
+// 	}
+// 	if updatedpostDto.Email != "" {
+// 		query += "email = ?, "
+// 		args = append(args, updatedpostDto.Email)
+// 	}
+// 	if updatedpostDto.postname != "" {
+// 		query += "postname = ?, "
+// 		args = append(args, updatedpostDto.postname)
+// 	}
 
-	// Remove the trailing comma and space from the query
-	query = strings.TrimSuffix(query, ", ")
-	// Add the WHERE clause
-	query += " WHERE id = ?"
-	args = append(args, postId)
+// 	// Remove the trailing comma and space from the query
+// 	query = strings.TrimSuffix(query, ", ")
+// 	// Add the WHERE clause
+// 	query += " WHERE id = ?"
+// 	args = append(args, postId)
 
-	statement, err := postsRepository.db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer statement.Close()
+// 	statement, err := postsRepository.db.Prepare(query)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer statement.Close()
 
-	if _, err = statement.Exec(args...); err != nil {
-		return err
-	}
+// 	if _, err = statement.Exec(args...); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (postsRepository posts) DeletePost(postId uint64) error {
-	return nil
-}
+// func (postsRepository posts) DeletePost(postId uint64) error {
+// 	return nil
+// }

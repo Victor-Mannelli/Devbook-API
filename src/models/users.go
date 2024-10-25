@@ -22,7 +22,7 @@ func (user *User) ParseUserDto(step string) error {
 	if err := user.validateUserDto(step); err != nil {
 		return err
 	}
-	if err := user.userParser(step); err != nil {
+	if err := user.formatUserDto(step); err != nil {
 		return err
 	}
 
@@ -60,7 +60,7 @@ func (user *User) validateUserDto(step string) error {
 	return nil
 }
 
-func (user *User) userParser(step string) error {
+func (user *User) formatUserDto(step string) error {
 	user.Name = strings.TrimSpace(user.Name)
 	user.Username = strings.TrimSpace(user.Username)
 	user.Email = strings.TrimSpace(user.Email)
