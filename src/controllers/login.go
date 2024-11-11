@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -44,8 +45,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jwtToken, _ := utils.CreateTokenJWT(savedUser.ID)
+	userId := strconv.FormatUint(savedUser.ID, 10)
 
-	// fmt.Println(jwtToken)
-	// w.Write([]byte(jwtToken))
-	utils.HttpJsonResponse(w, http.StatusCreated, jwtToken)
+	utils.HttpJsonResponse(w, http.StatusCreated, models.AuthData{ID: userId, Token: jwtToken})
 }
