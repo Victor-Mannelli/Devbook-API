@@ -72,12 +72,17 @@ func (postsRepository posts) Dislike(postId uint64) error {
 
 func (postsRepository posts) FindPosts(userId uint64) ([]models.Post, error) {
 	rows, err := postsRepository.db.Query(`
+		SELECT p.*, u.username 
+		FROM posts p 
+		INNER JOIN users u ON u.id = p.author_id 
+		WHERE p.author_id = ? -- Posts created by the user
+		UNION
 		SELECT DISTINCT p.*, u.username 
 		FROM posts p 
 		INNER JOIN users u ON u.id = p.author_id 
 		INNER JOIN followers f ON p.author_id = f.user_id 
-		WHERE u.id = ? or f.follower_id = ?
-		ORDER BY 1 desc`,
+		WHERE f.follower_id = ? -- Posts from followed users
+		ORDER BY 1 DESC`,
 		userId, userId,
 	)
 	if err != nil {
