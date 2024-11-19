@@ -135,6 +135,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err = utils.ValidateHash(savedHashedPassword, updatePasswordDto.Password); err != nil {
 		utils.HttpErrorResponse(w, http.StatusUnauthorized, errors.New("passwords don't match"))
+		return
 	}
 
 	hashedPassword, err := utils.HashString(updatePasswordDto.NewPassword)
